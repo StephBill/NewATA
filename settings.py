@@ -7,10 +7,11 @@ SESSION_CONFIGS = [
     #     num_demo_participants=3,
     # ),
      dict(
-        name='Basic_PD_ATA',
-        display_name = 'Basic PD ATA',
-        app_sequence=['Basic_PD_ATA'],
+        name='Basic_PD_ATA_Router',
+        display_name = 'Basic PD ATA Router',
+        app_sequence=['Basic_PD_ATA_Router', 'Basic_PD_ATA_Simple', 'Basic_PD_ATA'],
         num_demo_participants=2,
+        room = 'Basic_PD_ATA_Router'
     ),
 ]
 
@@ -41,3 +42,14 @@ ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
 DEMO_PAGE_INTRO_HTML = """ """
 
 SECRET_KEY = '7056942908644'
+
+## Rooms
+ROOMS = [
+    dict(
+        name = 'Basic_PD_ATA_Router',
+        display_name = 'Basic PD ATA Rooms',
+        participant_label_file = '_rooms/basic_pd_ata_room.txt',
+        use_secure_urls = False
+    ),
+
+]

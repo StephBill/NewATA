@@ -1,0 +1,10 @@
+{% extends "global/Page.html" %}
+
+{% block content %}
+    <p>Redirecting you to the correct app... please wait.</p>
+    <script>
+        setTimeout(function () {
+            document.querySelector('form').submit();
+        }, 1);
+    </script>
+{% endblock %}

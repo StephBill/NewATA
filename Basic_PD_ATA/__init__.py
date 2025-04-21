@@ -185,6 +185,13 @@ class Results(Page):
             show_other_participant_info = show_other_participant_info,
         )
 
+    @staticmethod
+    def app_after_this_page(player, upcoming_apps):
+        print('upcoming_apps is', upcoming_apps)
+        return None
+        # if player.whatever:
+        #     return upcoming_apps[-1]
+
 
 
 page_sequence = [Instructions, ChoicePage, ChoiceWaitPage, ResultsWaitPage, Results]

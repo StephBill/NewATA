@@ -20,14 +20,15 @@ class C(BaseConstants):
     payoff_matrix = get_payoff_matrix(CONFIG_PATH)
     default_value = ""
 
-
 class Subsession(BaseSubsession):
     pass
 
+def creating_session(subsession):
+    for p in subsession.session.get_participants():
+        p.is_dropout = False  # Default value
 
 class Group(BaseGroup):
     pass
-
 
 class Player(BasePlayer):
     your_choice = models.StringField(initial="")
@@ -49,13 +50,15 @@ class Player(BasePlayer):
     end_time = models.FloatField(initial=0)
     end_time_formatted = models.StringField()
     duration = models.FloatField(initial=0)
-
-
-# def other_player(player: Player):
-#     return player.get_others_in_group()[0]
+    prolific_id = models.StringField(label="Please indicate your prolific ID", initial="")
+    is_dropout = models.BooleanField(initial=False)
 
 # PAGES
 class Instructions(Page):
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1  # Only show for the first round
+    
     @staticmethod
     def vars_for_template(player: Player):
         your_choice_order, other_choice_order, expectation_of_rounds = get_selection_order(CONFIG_PATH)
@@ -71,16 +74,33 @@ class Instructions(Page):
             expectation_of_rounds = expectation_of_rounds,
             first_row_percentage = first_row_percentage,
             show_other_participant_info = show_other_participant_info,
+            prolific_id = get_prolific_id(player),
         )
+
     @staticmethod
-    def is_displayed(player):
-        return player.round_number == 1  # Only show for the first round
+    def get_timeout_seconds(player):
+        if player.participant.is_dropout:
+            return 1  # instant timeout, 1 second
+        else:
+            return get_instruction_page_time_out_in_sec(CONFIG_PATH)
+    
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        participant = player.participant
 
-
+        if timeout_happened:
+            participant.is_dropout = True
 
 class ChoicePage(Page):
     form_model = 'player'
     form_fields = ['your_choice', 'your_think_other_choice', 'choice_AC_me', 'choice_AC_other', 'choice_AD_me', 'choice_AD_other', 'choice_BC_me', 'choice_BC_other', 'choice_BD_me', 'choice_BD_other']
+
+    @staticmethod
+    def get_timeout_seconds(player):
+        if player.participant.is_dropout:
+            return 1  # instant timeout, 1 second
+        else:
+            return get_game_page_time_out_in_sec(CONFIG_PATH)
 
     @staticmethod
     def vars_for_template(player: Player):
@@ -106,6 +126,7 @@ class ChoicePage(Page):
             first_row_percentage = first_row_percentage,
             show_other_participant_info = show_other_participant_info,
         )
+    
     @staticmethod
     def js_vars(player):
         previous_rounds = player.in_previous_rounds()
@@ -126,6 +147,8 @@ class ChoicePage(Page):
             default_value = C.default_value,
             previous_rounds_data = previous_rounds_data,
         )
+    
+    @staticmethod
     def error_message(player, values): 
         if values['your_choice'] not in ["A", "B"]:
             return "Please select value between A or B"
@@ -138,10 +161,15 @@ class ChoicePage(Page):
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
+        if timeout_happened:
+            player.participant.is_dropout = True
         set_end_time(player)
 
 class ChoiceWaitPage(WaitPage):
-    # after_all_players_arrive = set_payoffs
+    @staticmethod
+    def is_displayed(player: Player):
+        return choice_wait_page_is_display(player, C, get_game_page_time_out_in_sec(CONFIG_PATH))
+
     @staticmethod
     def after_all_players_arrive(group: Group):
         set_payoffs(group, C)
@@ -149,7 +177,6 @@ class ChoiceWaitPage(WaitPage):
 class ResultsWaitPage(WaitPage):
     def is_displayed(Group):
         return Group.round_number > C.NUM_ROUNDS  # Only in last round
-
 
 class Results(Page):
     @staticmethod
@@ -183,6 +210,7 @@ class Results(Page):
             total_me_payoff = total_me_payoff,
             total_other_payoff = total_other_payoff,
             show_other_participant_info = show_other_participant_info,
+            prolific_url = self.session.config['prolific_completion_url']
         )
 
     @staticmethod
@@ -191,7 +219,5 @@ class Results(Page):
         return None
         # if player.whatever:
         #     return upcoming_apps[-1]
-
-
 
 page_sequence = [Instructions, ChoicePage, ChoiceWaitPage, ResultsWaitPage, Results]

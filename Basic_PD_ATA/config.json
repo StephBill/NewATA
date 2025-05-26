@@ -1,5 +1,5 @@
 {
-    "round_number": 2,
+    "round_number": 10,
     "payoff_matrix": {
         "A_A": [50, 50],
         "A_B": [0, 100],
@@ -11,6 +11,6 @@
     "expectation_of_rounds": 1,
     "first_row_width_percentage": 46,
     "show_other_participant_info" : true,
-    "instruction_page_time_out_in_sec": 60,
-    "game_page_time_out_in_sec": 70
+    "instruction_page_time_out_in_sec": 300,
+    "game_page_time_out_in_sec": 180
 }

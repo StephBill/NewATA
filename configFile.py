@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+import random
 
 def get_config(path):
     try:
@@ -76,12 +77,12 @@ def get_game_page_time_out_in_sec(path):
 def other_player(player):
     return player.get_others_in_group()[0]
 
-def choice_wait_page_is_display(player, constant, game_page_time_out):
+def choice_wait_page_is_display(player, constant, game_page_time_out, instruction_page_time_out):
     others = player.get_others_in_group()
     wait_duration = time.time() - player.participant.vars['going_to_wait_page']
     if others:
         other = others[0]
-        if wait_duration > game_page_time_out + 1:
+        if wait_duration > (game_page_time_out + instruction_page_time_out) + 1:
             other.participant.is_dropout = True
         
         if other.participant.is_dropout == True:
@@ -105,6 +106,9 @@ def get_prolific_id(player):
     player.participant.vars.setdefault('prolific_id', 'unknown')
     return player.participant.vars['prolific_id']
 
+def get_random_choice():
+    return random.choice(['A', 'B'])
+
 def set_payoffs(group, constant):
     players = group.get_players()
     player1 = players[0]
@@ -120,9 +124,9 @@ def set_payoffs(group, constant):
         player2.is_dropout = True
 
     if player1.your_choice not in ("A", "B") or player1.is_dropout == True:
-        player1.your_choice = "A"
+        player1.your_choice = get_random_choice()
     if player2.your_choice not in ("A", "B") or player2.is_dropout == True:
-        player2.your_choice = "A"
+        player2.your_choice = get_random_choice()
 
     player1.payoff, player2.payoff = constant.payoff_matrix.get((player1.your_choice, player2.your_choice))
     player1.me_payoff = int(player1.payoff)
@@ -141,5 +145,5 @@ def set_payoffs(group, constant):
     player2.other_total_payoff = player1.me_total_payoff
 
 def validate_prolific_id(prolific_id):
-    if prolific_id is None or len(prolific_id) != 1:
+    if prolific_id is None or len(prolific_id) != 24:
         return f"Prolific ID must be 24 characters long"

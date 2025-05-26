@@ -138,7 +138,7 @@ class ChoicePage(Page):
 class ChoiceWaitPage(WaitPage):
     @staticmethod
     def is_displayed(player: Player):
-        return choice_wait_page_is_display(player, C, get_game_page_time_out_in_sec(CONFIG_PATH))
+        return choice_wait_page_is_display(player, C, get_game_page_time_out_in_sec(CONFIG_PATH), get_instruction_page_time_out_in_sec(CONFIG_PATH))
 
     @staticmethod
     def after_all_players_arrive(group: Group):

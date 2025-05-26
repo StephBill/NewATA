@@ -9,7 +9,7 @@ class C(BaseConstants):
     NAME_IN_URL = 'Basic_PD_ATA_Router'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
-    TIMEOUT_IN_SECONDS = 60*10
+    TIMEOUT_IN_SECONDS = 60*5
 
 
 def creating_session(subsession):
